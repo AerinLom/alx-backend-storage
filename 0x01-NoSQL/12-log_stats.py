@@ -16,13 +16,12 @@ def print_nginx_request_logs(nginx_collection):
     methods = ["GET", "POST", "PUT", "PATCH", "DELETE"]
     print("Methods:")
     for method in methods:
-        count = nginx_collection.count_documents({"method": method})
+        count = len(list(nginx_collection.find({'method': method})))
         print(f"\tmethod {method}: {count}")
 
-    status_checks = nginx_collection.count_documents({
-        "method": "GET",
-        "path": "/status"
-    })
+    status_checks = len(list(
+        nginx_collection.find({'method': 'GET', 'path': '/status'})
+    ))
     print(f"{status_checks} status check")
 
 
@@ -30,7 +29,7 @@ def run():
     """
     Provides some stats about Nginx logs stored in MongoDB
     """
-    clientConnection = MongoClient('mongodb://localhost:27017/')
+    clientConnection = MongoClient('mongodb://localhost:27017')
     database = clientConnection.logs
     nginx_collection = database.nginx
 
