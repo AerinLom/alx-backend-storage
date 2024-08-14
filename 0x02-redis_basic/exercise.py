@@ -56,19 +56,25 @@ def replay(fn: Callable) -> None:
     if not isinstance(cache_memory, redis.Redis):
         return
 
-    input_k = f"{fn.__qualname__}:inputs"
-    output_k = f"{fn.__qualname__}:outputs"
+    fxn_name = fn.__qualname__
+    input_k = '{}:inputs'.format(fxn_name)
+    output_k = '{}:outputs'.format(fxn_name)
+
+    fxn_call_count = 0
+    if cache_memory.exists(fxn_name) != 0:
+        fxn_call_count = int(cache_memory.get(fxn_name))
+
+    print('{} was called {} times:'.format(fxn_name, fxn_call_count))
 
     inputs = cache_memory.lrange(input_k, 0, -1)
     outputs = cache_memory.lrange(output_k, 0, -1)
 
-    fxn_call_count = len(inputs)
-    print(f"{fn.__qualname__} was called {fxn_call_count} times:")
-
     for inp, out in zip(inputs, outputs):
-        input_str = inp.decode('utf-8')
-        output_str = out.decode('utf-8')
-        print(f"{fn.__qualname__}(*{input_str}) -> {output_str}")
+        print('{}(*{}) -> {}'.format(
+            fxn_name,
+            inp.decode('utf-8'),
+            out.decode('utf-8')
+        ))
 
 
 class Cache:
