@@ -39,7 +39,7 @@ def call_history(method: Callable) -> Callable:
             output_k = f"{method.__qualname__}:outputs"
             self._redis.rpush(input_k, str(args))
             output_result = method(self, *args, **kwargs)
-            self._redis.rpush(output_k, str(output_result))
+            self._redis.rpush(output_k, (output_result))
 
             return output_result
     return wrapper
@@ -51,23 +51,29 @@ def replay(fn: Callable) -> None:
     """
     if fn is None or not hasattr(fn, '__self__'):
         return
-    redis_store = getattr(fn.__self__, '_redis', None)
-    if not isinstance(redis_store, redis.Redis):
+
+    cache_memory = getattr(fn.__self__, '_redis', None)
+    if not isinstance(cache_memory, redis.Redis):
         return
+
     fxn_name = fn.__qualname__
-    in_key = '{}:inputs'.format(fxn_name)
-    out_key = '{}:outputs'.format(fxn_name)
+    input_k = '{}:inputs'.format(fxn_name)
+    output_k = '{}:outputs'.format(fxn_name)
+    
     fxn_call_count = 0
-    if redis_store.exists(fxn_name) != 0:
-        fxn_call_count = int(redis_store.get(fxn_name))
+    if cache_memory.exists(fxn_name) != 0:
+        fxn_call_count = int(cache_memory.get(fxn_name))
+    
     print('{} was called {} times:'.format(fxn_name, fxn_call_count))
-    fxn_inputs = redis_store.lrange(in_key, 0, -1)
-    fxn_outputs = redis_store.lrange(out_key, 0, -1)
-    for fxn_input, fxn_output in zip(fxn_inputs, fxn_outputs):
+    
+    inputs = cache_memory.lrange(input_k, 0, -1)
+    outputs = cache_memory.lrange(output_k, 0, -1)
+    
+    for inp, out in zip(inputs, outputs):
         print('{}(*{}) -> {}'.format(
             fxn_name,
-            fxn_input.decode("utf-8"),
-            fxn_output,
+            inp.decode('utf-8'),
+            out.decode('utf-8')
         ))
 
 
@@ -77,7 +83,7 @@ class Cache:
         Initialize the Cache class with a Redis client instance
         """
         self._redis = redis.Redis()
-        self._redis.flushdb()
+        self._redis.flushdb(True)
 
     @count_calls
     @call_history
