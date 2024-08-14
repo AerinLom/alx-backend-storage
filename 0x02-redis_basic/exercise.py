@@ -31,10 +31,10 @@ class Cache:
             return fn(value)
         return value
 
-    def get_str(self, key: str) -> Optional[str]:
+    def get_str(self, value: str) -> Optional[str]:
         """Retrieve a string value from Redis."""
         return value.decode('utf-8', 'strict')
 
-    def get_int(self, key: str) -> Optional[int]:
+    def get_int(self, value: str) -> Optional[int]:
         """Retrieve an integer value from Redis."""
         return int(value)
