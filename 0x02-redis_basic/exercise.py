@@ -52,15 +52,15 @@ def replay(fn: Callable) -> None:
     if fn is None or not hasattr(fn, '__self__'):
         return
 
-    cache_memory = fn.__self__
-    if not isinstance(cache_memory._redis, redis.Redis):
+    cache_memory = getattr(fn.__self__, '_redis', None)
+    if not isinstance(cache_memory, redis.Redis):
         return
 
     input_k = f"{fn.__qualname__}:inputs"
     output_k = f"{fn.__qualname__}:outputs"
 
-    inputs = cache_memory._redis.lrange(input_k, 0, -1)
-    outputs = cache_memory._redis.lrange(output_k, 0, -1)
+    inputs = cache_memory.lrange(input_k, 0, -1)
+    outputs = cache_memory.lrange(output_k, 0, -1)
 
     fxn_call_count = len(inputs)
     print(f"{fn.__qualname__} was called {fxn_call_count} times:")
