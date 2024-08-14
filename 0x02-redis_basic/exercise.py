@@ -52,12 +52,12 @@ def replay(method: Callable) -> None:
     cache_memory = method.__self__
     input_k = f"{method.__qualname__}:inputs"
     output_k = f"{method.__qualname__}:outputs"
-    
+
     inputs = cache_memory._redis.lrange(input_k, 0, -1)
     outputs = cache_memory._redis.lrange(output_k, 0, -1)
-    
+
     print(f"{method.__qualname__} was called {len(inputs)} times:")
-    
+
     for inp, out in zip(inputs, outputs):
         print(f"{method.__qualname__}(*{eval(inp)}) -> {out.decode('utf-8')}")
 
