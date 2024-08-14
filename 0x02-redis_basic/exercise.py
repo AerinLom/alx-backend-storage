@@ -4,7 +4,7 @@ This module provides a Cache class that interfaces with Redis
 """
 import redis
 import uuid
-from typing import Union
+from typing import Unioni, Callable, Optional
 
 
 class Cache:
@@ -25,16 +25,16 @@ class Cache:
         Retrieve data from Redis and apply an optional conversion function.
         """
         value = self._redis.get(key)
-        if value is None:
-            return None
-        if fn:
-            return fn(value)
-        return value
+        return fn(value) if fn is not None else value
 
-    def get_str(self, value: str) -> Optional[str]:
-        """Retrieve a string value from Redis."""
+    def get_str(self, value: str) -> str:
+        """
+        Retrieve a string value from Redis
+        """
         return value.decode('utf-8', 'strict')
 
-    def get_int(self, value: str) -> Optional[int]:
-        """Retrieve an integer value from Redis."""
+    def get_int(self, value: str) -> int:
+        """
+        Retrieve an integer value from Redis
+        """
         return int(value)
