@@ -47,7 +47,7 @@ def call_history(method: Callable) -> Callable:
 
 def replay(fn: Callable) -> None:
     """
-    Display the history of calls of a particular function.
+    Display the history of calls of a particular function
     """
     if fn is None or not hasattr(fn, '__self__'):
         return
@@ -59,17 +59,16 @@ def replay(fn: Callable) -> None:
     input_k = f"{fn.__qualname__}:inputs"
     output_k = f"{fn.__qualname__}:outputs"
 
-    fxn_call_count = 0
-    if cache_memory._redis.exists(fn.__qualname__):
-        fxn_call_count = int(cache_memory._redis.get(fn.__qualname__))
-
-    print(f"{fn.__qualname__} was called {fxn_call_count} times:")
-
     inputs = cache_memory._redis.lrange(input_k, 0, -1)
     outputs = cache_memory._redis.lrange(output_k, 0, -1)
 
+    fxn_call_count = len(inputs)
+    print(f"{fn.__qualname__} was called {fxn_call_count} times:")
+
     for inp, out in zip(inputs, outputs):
-        print(f"{fn.__qualname__}(*{inp.decode('utf-8')}) -> {out.decode('utf-8')}")
+        input_str = inp.decode('utf-8')
+        output_str = out.decode('utf-8')
+        print(f"{fn.__qualname__}(*{input_str}) -> {output_str}")
 
 
 class Cache:
