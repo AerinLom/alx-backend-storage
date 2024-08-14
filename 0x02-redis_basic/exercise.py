@@ -4,7 +4,7 @@ This module provides a Cache class that interfaces with Redis
 """
 import redis
 import uuid
-from typing import Unioni, Callable, Optional
+from typing import Union, Callable, Optional
 
 
 class Cache:
