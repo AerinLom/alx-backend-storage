@@ -12,16 +12,17 @@ def count_calls(method: Callable) -> Callable:
     """
     Decorator to count the number of times a method is called
     """
-    
+
     @wraps(method)
     def wrapper(self, *args, **kwargs) -> Any:
         """
         Wrapper function that increments call count then calls original method
         """
-        self._redis.incr(method.__qualname__)
+        if isinstance(self._redis, redis.Redis):
+            self._redis.incr(method.__qualname__)
         return method(self, *args, **kwargs)
-    
     return wrapper
+
 
 class Cache:
     def __init__(self):
