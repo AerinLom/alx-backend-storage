@@ -39,7 +39,7 @@ def call_history(method: Callable) -> Callable:
             output_k = f"{method.__qualname__}:outputs"
             self._redis.rpush(input_k, str(args))
             output_result = method(self, *args, **kwargs)
-            self._redis.rpush(output_k, (output_result))
+            self._redis.rpush(output_k, output_result)
 
             return output_result
     return wrapper
@@ -85,8 +85,9 @@ class Cache:
         self._redis = redis.Redis()
         self._redis.flushdb(True)
 
-    @count_calls
+
     @call_history
+    @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """
         Store data in Redis with random key and return the key
@@ -96,7 +97,7 @@ class Cache:
         return key
 
     def get(self,
-            key: str, fn: Optional[Callable] = None) -> str:
+            key: str, fn: Callable = None) -> Union[str, bytes, int, float]:
         """
         Retrieve data from Redis and apply an optional conversion function.
         """
