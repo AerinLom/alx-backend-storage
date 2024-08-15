@@ -78,6 +78,9 @@ def replay(fn: Callable) -> None:
 
 
 class Cache:
+    """
+    A class used to implement caching to store and retrieve data
+    """
     def __init__(self):
         """
         Initialize the Cache class with a Redis client instance
